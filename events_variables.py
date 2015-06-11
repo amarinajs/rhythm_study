@@ -13,7 +13,7 @@ to generate the events """
 
 
 
-def events_variables(stim,ntim,re,e):
+def events_variables(stim,ntim,re,e,run_number):
     sonsets = stim[:,0]  #gets the events of 
     sduration = stim[:,1]   #soffset = sonsets + sduration
     #scorrect = stim[:,2]
@@ -71,7 +71,9 @@ def events_variables(stim,ntim,re,e):
         nphase,
         vis_field,
         direction,
-        sta_angle)
+        sta_angle,
+        res_angle,
+        run_number)
     
             
             

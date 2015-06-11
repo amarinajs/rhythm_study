@@ -8,7 +8,7 @@ Created on Tue Jun  9 19:07:59 2015
 import numpy as np
 
 def variables2events(sonsets,nonsets,ronsets,trials,sduration,nduration,
-                     rduration,task,sphase,nphase,vis_field,direction,sta_angle):
+                     rduration,task,sphase,nphase,vis_field,direction,sta_angle, res_angle, run_number):
  events = []
  for ensayos in trials: 
      had_response = np.isfinite(ronsets[ensayos])
