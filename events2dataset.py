@@ -86,3 +86,5 @@ for subject_dir in sys.argv[1:]:
         
         verbose(6, "Saving evds file for run%d" % run)
         h5save(filename, evds,compression=9)
+        del evds
+        del events
