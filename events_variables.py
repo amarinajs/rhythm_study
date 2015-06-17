@@ -33,7 +33,6 @@ def events_variables(stim,ntim,re,e,run_number):
     sta_angle = []
     for i in range(len(stim)):
         iscontrol.append(e['trial'][()][i][8])
-        res_angle.append(e['trial'][()][i][6])
         if iscontrol[i] == 1 :      
             task.append('control')
             sphase.append('attention')
@@ -53,10 +52,15 @@ def events_variables(stim,ntim,re,e,run_number):
         else:
             direction.append('ccw')
  
-        if e['trial'][()][i][4] == 0 or 45 or 315:
+        if e['trial'][()][i][4] == 0 or e['trial'][()][i][4] == 45 or e['trial'][()][i][4] == 315:
             sta_angle.append('right')
         else:
             sta_angle.append('left')
+
+        if e['trial'][()][i][6] == 0 or e['trial'][()][i][6] == 45 or e['trial'][()][i][6] == 315:
+            res_angle.append('right')
+        else:
+            res_angle.append('left')
             
     return (
         sonsets,

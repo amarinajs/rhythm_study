@@ -16,29 +16,29 @@ def variables2events(sonsets,nonsets,ronsets,trials,sduration,nduration,
                    'trial': ensayos,
                    'task': task[ensayos],
                    'direction': direction[ensayos],
-                   'vis_field': vis_field[ensayos],
-                   'res_angle': res_angle[ensayos],
-                   'sta_angle': sta_angle[ensayos],
-                   'hand_response': hand_response }
+                   'visual_field': vis_field[ensayos],
+                   'response_hand': res_angle[ensayos],
+                   'start_angle': sta_angle[ensayos],
+                   'response_eject': hand_response }
 
-     event_1 = event_base.copy()
-     event_1.update({'duration': sduration[ensayos],
+     event_sample_intervals = event_base.copy()
+     event_sample_intervals.update({'duration': sduration[ensayos],
      'onset': sonsets[ensayos],
      'targets': sphase[ensayos]})
-     events.append(event_1)
+     events.append(event_sample_intervals)
 
-     event_2 = event_base.copy()
-     event_2.update({'duration': nduration[ensayos],
+     event_test_intervals = event_base.copy()
+     event_test_intervals.update({'duration': nduration[ensayos],
      'onset': nonsets[ensayos],
      'targets': nphase[ensayos]})
-     events.append(event_2)
+     events.append(event_test_intervals)
 
      if hand_response:
-         event_3 = event_base.copy()
-         event_3.update({'duration': rduration[ensayos],
+         event_response_ejecution = event_base.copy()
+         event_response_ejecution.update({'duration': rduration[ensayos],
          'onset': ronsets[ensayos],
          'targets': 'response'})
-         events.append(event_3)  
+         events.append(event_response_ejecution)
          
          
  return events       
