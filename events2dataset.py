@@ -12,7 +12,6 @@ Created on Thu Jun  4 12:41:28 2015
 from mvpa2.tutorial_suite import *
 from events_variables import *
 from variables2events import *
-#importing everything you need
 import numpy as np #for arrays
 import scipy.io as sp  #for manipulation of matlab files
 import nibabel as nib
@@ -37,6 +36,8 @@ for subject_dir in sys.argv[1:]:
     matfiles = get_subj_files("*T*.mat")
     assert(len(matfiles) == 4)
     
+
+    all_ds = []
     #filename = os.path.join(os.getcwd(), subject_dir,"dataset_run%d.gzipped.hdf5" % f)
         
     for run in range(4):
@@ -44,7 +45,7 @@ for subject_dir in sys.argv[1:]:
         f = run+1        
         run_number = run
 
-        filename = os.path.join(os.getcwd(), subject_dir,"dataset_run%d.hdf5" % f)
+        filename = os.path.join(os.getcwd(), subject_dir, "dataset_%s.hdf5" % subject_dir)#,"dataset_run%d.hdf5" % f)
 
         #nib.load('/home/brain/Downloads/filtered_func_data.nii.gz')
         #ffd = bold.get_data()
@@ -73,18 +74,37 @@ for subject_dir in sys.argv[1:]:
         events = variables2events(*variables)
         verbose(4, "Generating datasets for run %d"  % run )        
         ds = fmri_dataset(ffd, 
-                  mask='/usr/share/fsl/data/standard/MNI152lin_T1_2mm_brain_mask.nii.gz',
+                  #mask='/usr/share/fsl/data/standard/MNI152lin_T1_2mm_brain_mask.nii.gz',
+                  mask='./motor_cortex_mask.nii.gz',
                   chunks= np.ones(len_chunks) * run_number,
-                  add_fa = {'at': './thresh_zstat1.nii.gz', 'me': './thresh_zstat2.nii.gz', 'si': './thresh_zstat3.nii.gz','co' : './thresh_zstat4.nii.gz'})
+                  add_fa = {'at': './thresh_zstat1.nii.gz',
+                            'me': './thresh_zstat2.nii.gz',
+                            'si': './thresh_zstat3.nii.gz',
+                            'co' : './thresh_zstat4.nii.gz'})
                   #add_fa = {'at': mask_at, 'me': mask_me, 'si': mask_si,'co' : mask_co})
 
         #sub = fmri_dataset('filtered_func_data.nii.gz',add_fa = {'thresh_zstat1.nii.gz', 'thresh_zstat2.nii.gz','thresh_zstat3.nii.gz', 'thresh_zstat4.nii.gz'}, chunks= np.ones(280,))
         verbose(5, "Fitting the hrf model for run%d" % run )
         evds = fit_event_hrf_model(ds, events, time_attr ='time_coords',
-                                   condition_attr=['targets', 'trial'])
+                                   condition_attr=['targets',
+                                                   'chunks',
+                                                   'trial',
+                                                   'task',
+                                                   'direction',
+                                                   'response_hand',
+                                                   'start_angle',
+                                                   'visual_field'])
         del ds
-        
-        verbose(6, "Saving evds file for run%d" % run)
-        h5save(filename, evds,compression=9)
+
+
+        all_ds.append(evds)
         del evds
         del events
+        if f == 4:
+            verbose(6, "Saving evds files from %s" % subject_dir)
+            all_datasets = vstack(all_ds, a = 0)
+            h5save(filename, all_datasets,compression=9)
+            del all_datasets
+
+
+
