@@ -46,14 +46,6 @@ for subject_dir in sys.argv[1:]:
 
         filename = os.path.join(os.getcwd(), subject_dir,"dataset_motor_%s.hdf5" % subject_dir)  #,"dataset_run%d.hdf5" % f)
 
-        #nib.load('/home/brain/Downloads/filtered_func_data.nii.gz')
-        #ffd = bold.get_data()
-        #mask_at = os.path.join('803','thresh_zstat1.nii.gz')
-        #mask_me = os.path.join('803','thresh_zstat2.nii.gz')
-        #mask_si = os.path.join('803','thresh_zstat3.nii.gz')
-        #mask_co = os.path.join('803','thresh_zstat4.nii.gz')
-
-
         stimulus = get_subj_file("at%d.txt" % f)
         imaginery = get_subj_file("co%d.txt" % f)
         response = get_subj_file("re%d.txt" % f)
@@ -71,6 +63,7 @@ for subject_dir in sys.argv[1:]:
         variables = events_variables(stim, ntim, re, e, run_number)  #generates the variables to produce the events
         #sphere_gnbsearchlight(GNB(), NFoldPartitioner())
         events = variables2events(*variables)
+
         verbose(4, "Generating datasets for run %d" % run)
         ds = fmri_dataset(ffd,
                           #mask='/usr/share/fsl/data/standard/MNI152lin_T1_2mm_brain_mask.nii.gz',
@@ -90,20 +83,27 @@ for subject_dir in sys.argv[1:]:
         evds = fit_event_hrf_model(ds, events, time_attr='time_coords',
                                    condition_attr=['targets',
                                                    'chunks',
+                                                   'field_response_visual',
                                                    'trial',
                                                    'task',
                                                    'direction',
-                                                   'response_hand',
-                                                   'start_angle',
-                                                   'visual_field'])
+                                                   'start_angle'])
         del ds
-
+        #evds = fit_event_hrf_model(ds,
+        #                           events,
+        #                           time_attr='time_coords',
+        #                           condition_attr=['targets',
+        #                                           'chunks'])
         all_ds.append(evds)
         del evds
         del events
+
+
+
         if f == 4:
             verbose(6, "Saving evds files from %s" % subject_dir)
             all_datasets = vstack(all_ds, a=0)
+            zscore(all_datasets)
             h5save(filename, all_datasets, compression=9)
             del all_datasets
 

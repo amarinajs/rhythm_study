@@ -57,11 +57,24 @@ def events_variables(stim,ntim,re,e,run_number):
         else:
             sta_angle.append('left')
 
-        if e['trial'][()][i][6] == 0 or e['trial'][()][i][6] == 45 or e['trial'][()][i][6] == 315:
+        #if e['trial'][()][i][6] == 0 or e['trial'][()][i][6] == 45 or e['trial'][()][i][6] == 315:
+        #    res_angle.append('right')
+        #else:
+        #    res_angle.append('left')
+        if e['trial'][()][i][6] == 0:
             res_angle.append('right')
+        elif e['trial'][()][i][6] == 45:
+            res_angle.append('right')
+        elif e['trial'][()][i][6] == 315:
+            res_angle.append('right')
+        elif e['trial'][()][i][6] == 135:
+            res_angle.append('left')
+        elif e['trial'][()][i][6] == 225:
+            res_angle.append('left')
         else:
             res_angle.append('left')
-            
+
+
     return (
         sonsets,
         nonsets,
