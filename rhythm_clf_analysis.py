@@ -18,7 +18,7 @@ import pylab
 
 
 
-verbose.level = 5
+verbose.level = 6
 
 sys.argv[1:]
 
@@ -29,21 +29,49 @@ for subject_dir in sys.argv[1:]:
         
         data = h5load(filename)
         verbose(2, "Creating dataset for response ")
-        response = data[data.targets == 'response']
-        ds = dataset_wizard(response.samples,targets=response.sa.response_hand, chunks=response.sa.chunks)
+        fingers  = data[:, data.fa.si>0]
+        response = fingers[fingers.targets == 'response']
+        res_cor = response[response.sa.field_response_visual != 'none']
+        evds = dataset_wizard(res_cor.samples,targets=res_cor.sa.field_response_visual, chunks=res_cor.sa.chunks)
         verbose(3, "Creating classifier")
         clf = kNN(k=1,
                   dfx=one_minus_correlation,
                   voting='majority')
-        verbose(4, "Starting Crossvalidation")
+        verbose(3, "Starting Balancer")
+        Bal = Balancer(amount='equal', attr='targets', limit='chunks',apply_selection=True)
+        evds = Bal(evds)
+        verbose(4, "Starting Crossvalidation with kNN")
         cvte = CrossValidation(clf,
                              NFoldPartitioner(),
                              errorfx = lambda p,
                              t: np.mean(p == t),
+                             #postproc=mean_sample(),
                              enable_ca = ['stats'])
-        cv_results = cvte(ds)
-        verbose(5, "Printing results")
-        print cvte.ca.stats.as_string(description=True)
-        print cvte.ca.stats.matrix
-        cvte.ca.stats.plot(labels = ['left', 'right'])
-        pylab.show()
+        cv_results = cvte(evds)
+        verbose(5, "Printing Cross Validation results")
+        print cvte.ca.stats
+        verbose(3, "Creating classifier")
+        clf = LinearCSVMC()
+        verbose(4, "Starting Crossvalidation with LinearCSVMC")
+        cvte = CrossValidation(clf,
+                             NFoldPartitioner(),
+                             errorfx = lambda p,
+                             t: np.mean(p == t),
+                             #postproc=mean_sample(),
+                             enable_ca = ['stats'])
+        cv_results = cvte(evds)
+        verbose(5, "Printing Cross Validation results")
+        print cvte.ca.stats
+
+        #sl = Searchlight(cvte,
+        #         IndexQueryEngine(voxel_indices=Sphere(1),
+        #                          event_offsetidx=Sphere(2)),
+        #         postproc=mean_sample())
+        #res = sl(evds)
+        #verbose(6, "Printing Searchlight results")
+        #print res
+        #print cvte.ca.stats.matrix
+        #cvte.ca.stats.plot(labels = ['left', 'right'])
+        #pylab.show()
+        #cvte = CrossValidation(GNB(), NFoldPartitioner(),
+            #                   postproc=mean_sample())
