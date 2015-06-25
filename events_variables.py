@@ -31,8 +31,12 @@ def events_variables(stim,ntim,re,e,run_number):
     vis_field = []
     res_angle = []
     sta_angle = []
+    res_field = []
+    final_angle = []
+    stim_angle = []
     for i in range(len(stim)):
         iscontrol.append(e['trial'][()][i][8])
+        stim_angle.append(e['trial'][()][0][3][2])
         if iscontrol[i] == 1 :      
             task.append('control')
             sphase.append('attention')
@@ -44,35 +48,68 @@ def events_variables(stim,ntim,re,e,run_number):
    
         if sum(e['trial'][()][i][3])>365:
             vis_field.append('right')
+            #if all(e['trial'][()][i][3] == [180,45,315]) or all(e['trial'][()][i][3] == [45,315,180]) or all(e['trial'][()][i][3] == [315,180,45]):
+            if list(e['trial'][()][i][3]) in [[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
+                direction.append('cw')
+            elif list(e['trial'][()][i][3]) in [[180, 315, 45], [315, 45, 180], [45, 180, 315]]: #[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
+                direction.append('ccw')
+            else:
+                direction.append('none')
         else:
             vis_field.append('left')
-        
-        if e['trial'][()][i][7] == -1:
-            direction.append('cw')
-        else:
-            direction.append('ccw')
- 
-        if e['trial'][()][i][4] == 0 or e['trial'][()][i][4] == 45 or e['trial'][()][i][4] == 315:
-            sta_angle.append('right')
-        else:
-            sta_angle.append('left')
+            if list(e['trial'][()][i][3]) in [[225, 135, 0], [135, 0, 225], [0, 225, 135]]:
+                direction.append('cw')
+            elif list(e['trial'][()][i][3]) in [[225, 0, 135], [135, 225, 0], [0, 135, 225]]:
+                direction.append('ccw')
+            else:
+                direction.append('none')
 
-        #if e['trial'][()][i][6] == 0 or e['trial'][()][i][6] == 45 or e['trial'][()][i][6] == 315:
-        #    res_angle.append('right')
-        #else:
-        #    res_angle.append('left')
-        if e['trial'][()][i][6] == 0:
-            res_angle.append('right')
-        elif e['trial'][()][i][6] == 45:
-            res_angle.append('right')
-        elif e['trial'][()][i][6] == 315:
-            res_angle.append('right')
-        elif e['trial'][()][i][6] == 135:
-            res_angle.append('left')
-        elif e['trial'][()][i][6] == 225:
-            res_angle.append('left')
+        if e['trial'][()][i][4] in [0, 45, 315]:
+            sta_angle.append('right')
+        elif e['trial'][()][i][4] in [180, 225, 135]:
+            sta_angle.append('left')
         else:
-            res_angle.append('left')
+            sta_angle.append('none')
+
+        if e['trial'][()][i][6] in [0, 45, 315]:
+            res_field.append('right')
+        elif e['trial'][()][i][6] in [225, 180, 135]:
+            res_field.append('left')
+        elif e['trial'][()][2][6] == 'NaN':
+            res_field.append('none')
+        else:
+            res_field.append('none')
+
+        if e['trial'][()][i][6] == 0:
+            res_angle.append('0')
+        elif e['trial'][()][i][6] == 45:
+            res_angle.append('45')
+        elif e['trial'][()][i][6] == 315:
+            res_angle.append('315')
+        elif e['trial'][()][i][6] == 135:
+            res_angle.append('135')
+        elif e['trial'][()][i][6] == 225:
+            res_angle.append('225')
+        elif e['trial'][()][i][6] == 180:
+            res_angle.append('180')
+        else:
+            res_angle.append('none')
+
+        if e['trial'][()][i][5] == 0:
+            final_angle.append('0')
+        elif e['trial'][()][i][5] == 45:
+            final_angle.append('45')
+        elif e['trial'][()][i][5] == 315:
+            final_angle.append('315')
+        elif e['trial'][()][i][5] == 135:
+            final_angle.append('135')
+        elif e['trial'][()][i][5] == 225:
+            final_angle.append('225')
+        elif e['trial'][()][i][5] == 180:
+            final_angle.append('180')
+        else:
+            final_angle.append('none')
+
 
 
     return (
@@ -90,7 +127,10 @@ def events_variables(stim,ntim,re,e,run_number):
         direction,
         sta_angle,
         res_angle,
-        run_number)
+        run_number,
+        res_field,
+        final_angle,
+        stim_angle)
     
             
-            
+
