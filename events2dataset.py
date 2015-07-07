@@ -13,8 +13,8 @@ from mvpa2.tutorial_suite import *
 from events_variables import *
 from variables2events import *
 from mvpa2.misc.fsl.base import McFlirtParams
-import numpy as np  #for arrays
-import scipy.io as sp  #for manipulation of matlab files
+import numpy as np  # for arrays
+import scipy.io as sp  # for manipulation of matlab files
 import nibabel as nib
 import os
 import glob
@@ -22,7 +22,6 @@ import sys
 
 
 verbose.level = 6
-
 
 verbose(1, "Generating datasets")
 for subject_dir in sys.argv[1:]:
@@ -38,21 +37,29 @@ for subject_dir in sys.argv[1:]:
     assert (len(matfiles) == 4)
 
     all_ds = []
-    #filename = os.path.join(os.getcwd(), subject_dir,"dataset_run%d.gzipped.hdf5" % f)
+    # filename = os.path.join(os.getcwd(), subject_dir,"dataset_run%d.gzipped.hdf5" % f)
 
     for run in range(4):
         verbose(3, "Loading run %d" % run)
         f = run + 1
         run_number = run
 
-        filename = os.path.join(os.getcwd(), subject_dir,"dataset_%s.hdf5" % subject_dir)  #,"dataset_run%d.hdf5" % f)
-
+        filename = os.path.join(os.getcwd(), subject_dir, "dataset_%s.hdf5" % subject_dir)  #,"dataset_run%d.hdf5" % f)
         stimulus = get_subj_file("at%d.txt" % f)
         imaginery = get_subj_file("co%d.txt" % f)
         response = get_subj_file("re%d.txt" % f)
         path_mat = matfiles[run]
-        ffd = get_subj_file("run%d/filtered_func_data.nii.gz" % f)
-        mc = McFlirtParams(get_subj_file("run%d/prefiltered_func_data_mcf.par" % f))
+        #base_path = "/data/rhythm/output/model-1/task001/"
+        #ffd = get_subj_file("run%d/filtered_func_data.nii.gz" % f) for filtered_func_data
+        base_path = os.path.join("/data/rhythm/output/model-1/task001/", subject_dir)
+        ffd = os.path.join(base_path,"BOLD/task001_run00%d/bold_mc_tempfilt_mni.nii.gz" % run)
+        #mc = McFlirtParams(get_subj_file("run%d/prefiltered_func_data_mcf.par" % f))
+        #print base_path
+        mc_path = os.path.join(base_path, "BOLD", "qa", "mc", "task001__realign%d/bold_dtype_mcf.nii.gz.par" % run)
+        #print mc_path
+        mc = McFlirtParams(mc_path)
+        art_filename = os.path.join(base_path, "BOLD", "qa/art/task001__art%d/art.bold_dtype_mcf_outliers.txt" % run)
+        #print ffd
         data = nib.load(ffd).get_data()
         len_chunks = data.shape[3]
         del data
@@ -62,6 +69,7 @@ for subject_dir in sys.argv[1:]:
         ntim = np.loadtxt(imaginery)
         mat = sp.loadmat(path_mat, squeeze_me=True)  #load mat file
         e = mat['e']
+        outlier_volumes = np.atleast_1d(np.loadtxt(art_filename).astype(int))
         variables = events_variables(stim, ntim, re, e, run_number)  #generates the variables to produce the events
         #sphere_gnbsearchlight(GNB(), NFoldPartitioner())
         events = variables2events(*variables)
@@ -78,7 +86,7 @@ for subject_dir in sys.argv[1:]:
                                   'co': './thresh_zstat4.nii.gz',
                                   'fi': './finger_mask.hdr'})
         TR = 2
-        ds.sa['time_coords'] = np.arange(0,len_chunks*TR,TR)
+        ds.sa['time_coords'] = np.arange(0, len_chunks * TR, TR)
 
         for param in mc:
             ds.sa['mc_' + param] = mc[param]
@@ -86,6 +94,12 @@ for subject_dir in sys.argv[1:]:
         verbose(5, "Detrending")
         poly_detrend(ds, opt_regs=['mc_x', 'mc_y', 'mc_z',
                                    'mc_rot1', 'mc_rot2', 'mc_rot3'])
+        outliers_sas = []
+        if len(outlier_volumes):
+            regr_outliers = np.zeros((ds.nsamples, outlier_volumes.size))
+            for i in xrange(outlier_volumes.size): regr_outliers[outlier_volumes[i], i] = 1
+            ds.sa['outliers'] = regr_outliers
+            outliers_sas = ['outliers']
 
         verbose(5, "Fitting the hrf model for run%d" % run)
         evds = fit_event_hrf_model(ds, events, time_attr='time_coords',
@@ -98,12 +112,12 @@ for subject_dir in sys.argv[1:]:
                                                    'direction',
                                                    'start_angle',
                                                    'duration'],
-                                   # regr_attrs=['mc_x',
-                                   #             'mc_y',
-                                   #             'mc_z',
-                                   #             'mc_rot1',
-                                   #             'mc_rot2',
-                                   #             'mc_rot3'],
+                                   regr_attrs=['mc_x',
+                                               'mc_y',
+                                               'mc_z',
+                                               'mc_rot1',
+                                               'mc_rot2',
+                                               'mc_rot3'] + outliers_sas,
                                    design_kwargs=dict(drift_model='blank'))
         del ds
 
@@ -111,14 +125,12 @@ for subject_dir in sys.argv[1:]:
         del evds
         del events
 
-
-
         if f == 4:
             verbose(6, "Saving evds files from %s" % subject_dir)
-            all_datasets = vstack(all_ds, a=0)
-            #zscore(all_datasets)
-            h5save(filename, all_datasets, compression=9)
-            del all_datasets
+        all_datasets = vstack(all_ds, a=0)
+        #zscore(all_datasets)
+        h5save(filename, all_datasets, compression=9)
+        del all_datasets
 
 
 
