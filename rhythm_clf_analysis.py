@@ -22,7 +22,7 @@ verbose(1, "Loading  h5 files")
 print "Loading  h5 files"
 for subject_dir in sys.argv[1:]:
 
-        former, sys.stdout = sys.stdout, open(os.path.join(os.getcwd(), subject_dir, 'log.txt'), 'w')
+        former, sys.stdout = sys.stdout, open(os.path.join(os.getcwd(), subject_dir, 'log_bal_inside.txt'), 'w')
 
         filename = os.path.join(os.getcwd(), subject_dir, "dataset_%s.hdf5" % subject_dir)
         
@@ -36,18 +36,23 @@ for subject_dir in sys.argv[1:]:
         #evds = dataset_wizard(res_cor.samples,targets=res_cor.sa.field_response_visual, chunks=res_cor.sa.chunks)
         evds = res_cor
         print evds.summary()
-        verbose(3, "Starting Balancer")
-        print "Starting Balancer"
-        Bal = Balancer(amount='equal', attr='targets', limit='chunks', apply_selection=True)
-        evds = Bal(evds)
-        print evds.summary()
+        #verbose(3, "Starting Balancer")
+        #print "Starting Balancer"
+        #Bal = Balancer(amount='equal', attr='targets', limit='chunks', apply_selection=True)
+        #evds = Bal(evds)
+        #print evds.summary()
         verbose(3, "Creating classifier")
         print "Creating classifier"
         clf = LinearCSVMC()
         verbose(4, "Starting Crossvalidation with LinearCSVMC")
         print "Starting Crossvalidation with LinearCSVMC"
         cvte = CrossValidation(clf,
-                             NFoldPartitioner(),
+                               ChainNode([NFoldPartitioner(),
+                                          Balancer(amount='equal',
+                                                   attr='targets',
+                                                   limit='chunks',
+                                                   apply_selection=True,
+                                                   count=4)], space='partitions'),
                              errorfx = lambda p,
                              t: np.mean(p == t),
                              #postproc=mean_sample(),
@@ -61,7 +66,7 @@ for subject_dir in sys.argv[1:]:
         print "Printing Cross Validation amd SearchLight results"
         print cvte.ca.stats
         print 'Best performing sphere error:', np.min(sl_results.samples)
-        map2nifti(evds, sl_results).to_filename(os.path.join(os.getcwd(), subject_dir, "fingers_sl_motor.gz"))
+        map2nifti(evds, sl_results).to_filename(os.path.join(os.getcwd(), subject_dir, "fingers_sl_motor_bal_inside.gz"))
         verbose(1, "saving log file")
         print "saving log file"
         results, sys.stdout = sys.stdout, former
