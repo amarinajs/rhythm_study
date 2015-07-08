@@ -35,8 +35,8 @@ def events_variables(stim,ntim,re,e,run_number):
     final_angle = []
     stim_angle = []
     for i in range(len(stim)):
-        iscontrol.append(e['trial'][()][i][8])
-        stim_angle.append(e['trial'][()][0][3][2])
+        iscontrol.append(e['trial'][()][i]['isControlTask'])
+        stim_angle.append(e['trial'][()][i]['tarAngleEccDiam'][2])
         if iscontrol[i] == 1 :      
             task.append('control')
             sphase.append('attention')
@@ -46,66 +46,66 @@ def events_variables(stim,ntim,re,e,run_number):
             sphase.append('synchronization')
             nphase.append('continuation')
    
-        if sum(e['trial'][()][i][3])>365:
+        if sum(e['trial'][()][i]['tarAngleEccDiam'])>365:
             vis_field.append('right')
             #if all(e['trial'][()][i][3] == [180,45,315]) or all(e['trial'][()][i][3] == [45,315,180]) or all(e['trial'][()][i][3] == [315,180,45]):
-            if list(e['trial'][()][i][3]) in [[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
+            if list(e['trial'][()][i]['tarAngleEccDiam']) in [[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
                 direction.append('cw')
-            elif list(e['trial'][()][i][3]) in [[180, 315, 45], [315, 45, 180], [45, 180, 315]]: #[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
+            elif list(e['trial'][()][i]['tarAngleEccDiam']) in [[180, 315, 45], [315, 45, 180], [45, 180, 315]]: #[180, 45, 315], [45, 315, 180], [315, 180, 45]]:
                 direction.append('ccw')
             else:
                 direction.append('none')
         else:
             vis_field.append('left')
-            if list(e['trial'][()][i][3]) in [[225, 135, 0], [135, 0, 225], [0, 225, 135]]:
+            if list(e['trial'][()][i]['tarAngleEccDiam']) in [[225, 135, 0], [135, 0, 225], [0, 225, 135]]:
                 direction.append('cw')
-            elif list(e['trial'][()][i][3]) in [[225, 0, 135], [135, 225, 0], [0, 135, 225]]:
+            elif list(e['trial'][()][i]['tarAngleEccDiam']) in [[225, 0, 135], [135, 225, 0], [0, 135, 225]]:
                 direction.append('ccw')
             else:
                 direction.append('none')
 
-        if e['trial'][()][i][4] in [0, 45, 315]:
+        if e['trial'][()][i]['startAngle'] in [0, 45, 315]:
             sta_angle.append('right')
-        elif e['trial'][()][i][4] in [180, 225, 135]:
+        elif e['trial'][()][i]['startAngle'] in [180, 225, 135]:
             sta_angle.append('left')
         else:
             sta_angle.append('none')
 
-        if e['trial'][()][i][6] in [0, 45, 315]:
+        if e['trial'][()][i]['responseAngle'] in [0, 45, 315]:
             res_field.append('right')
-        elif e['trial'][()][i][6] in [225, 180, 135]:
+        elif e['trial'][()][i]['responseAngle'] in [225, 180, 135]:
             res_field.append('left')
-        elif e['trial'][()][2][6] == 'NaN':
+        elif e['trial'][()][i]['responseAngle'] == 'NaN':
             res_field.append('none')
         else:
             res_field.append('none')
 
-        if e['trial'][()][i][6] == 0:
+        if e['trial'][()][i]['responseAngle'] == 0:
             res_angle.append('0')
-        elif e['trial'][()][i][6] == 45:
+        elif e['trial'][()][i]['responseAngle'] == 45:
             res_angle.append('45')
-        elif e['trial'][()][i][6] == 315:
+        elif e['trial'][()][i]['responseAngle'] == 315:
             res_angle.append('315')
-        elif e['trial'][()][i][6] == 135:
+        elif e['trial'][()][i]['responseAngle'] == 135:
             res_angle.append('135')
-        elif e['trial'][()][i][6] == 225:
+        elif e['trial'][()][i]['responseAngle'] == 225:
             res_angle.append('225')
-        elif e['trial'][()][i][6] == 180:
+        elif e['trial'][()][i]['responseAngle'] == 180:
             res_angle.append('180')
         else:
             res_angle.append('none')
 
-        if e['trial'][()][i][5] == 0:
+        if e['trial'][()][i]['finalAngle'] == 0:
             final_angle.append('0')
-        elif e['trial'][()][i][5] == 45:
+        elif e['trial'][()][i]['finalAngle'] == 45:
             final_angle.append('45')
-        elif e['trial'][()][i][5] == 315:
+        elif e['trial'][()][i]['finalAngle'] == 315:
             final_angle.append('315')
-        elif e['trial'][()][i][5] == 135:
+        elif e['trial'][()][i]['finalAngle'] == 135:
             final_angle.append('135')
-        elif e['trial'][()][i][5] == 225:
+        elif e['trial'][()][i]['finalAngle'] == 225:
             final_angle.append('225')
-        elif e['trial'][()][i][5] == 180:
+        elif e['trial'][()][i]['finalAngle'] == 180:
             final_angle.append('180')
         else:
             final_angle.append('none')
